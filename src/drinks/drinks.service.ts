@@ -15,7 +15,26 @@ export class DrinksService {
         headers: this.headers,
         params: { name },
       });
-      return response.data;
+
+      // Format the raw response
+      const formattedData = response.data.map((drink) => ({
+        id: drink._id,
+        name: drink.name,
+        image: drink.image,
+        description: drink.description,
+        category: drink.category,
+        yield: drink.recipeYield,
+        prepTime: drink.prepTime,
+        totalTime: drink.totalTime,
+        ingredients: drink.recipeIngredient.filter((ingredient) => ingredient.trim() !== ''),
+        instructions: drink.recipeInstructions.map((step) => ({
+          stepName: step.name,
+          description: step.text,
+          image: step.image || null,
+        })),
+      }));
+
+      return formattedData;
     } catch (error) {
       throw new HttpException(
         'Failed to fetch drinks by name',

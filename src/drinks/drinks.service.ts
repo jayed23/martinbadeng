@@ -42,19 +42,53 @@ export class DrinksService {
       );
     }
   }
+
   async getDrinksByCategory(category: string) {
     try {
       const response = await axios.get(this.apiUrl, {
         headers: this.headers,
         params: { category },
       });
-      return response.data;
+  
+      // Process the raw response to extract relevant data
+      const drinks = response.data.map((item: any) => ({
+        id: item._id,
+        name: item.name,
+        description: item.description,
+        image: item.image,
+        category: item.category,
+        recipeYield: item.recipeYield,
+        prepTime: item.prepTime,
+        totalTime: item.totalTime,
+        ingredients: item.recipeIngredient,
+        instructions: item.recipeInstructions.map((step: any) => ({
+          stepName: step.name,
+          text: step.text,
+        })),
+      }));
+  
+      return drinks;
     } catch (error) {
-      throw new HttpException(
-        'Failed to fetch drinks by category',
-        HttpStatus.BAD_REQUEST,
-      );
+      // Handle different error scenarios
+      if (error.response) {
+        // Server responded with a status other than 2xx
+        throw new HttpException(
+          `Failed to fetch drinks by category: ${error.response.data.message}`,
+          error.response.status,
+        );
+      } else if (error.request) {
+        // No response received from server
+        throw new HttpException(
+          'No response received from server while fetching drinks by category',
+          HttpStatus.GATEWAY_TIMEOUT,
+        );
+      } else {
+        // Other errors (e.g., network issues)
+        throw new HttpException(
+          `Error while fetching drinks by category: ${error.message}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      }
     }
   }
-  
 }

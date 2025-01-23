@@ -42,4 +42,19 @@ export class DrinksService {
       );
     }
   }
+  async getDrinksByCategory(category: string) {
+    try {
+      const response = await axios.get(this.apiUrl, {
+        headers: this.headers,
+        params: { category },
+      });
+      return response.data;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch drinks by category',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+  
 }
